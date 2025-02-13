@@ -10,7 +10,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.material3.Card
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +40,7 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
     var numeroAccesos by remember { mutableStateOf(0) }
     var ultimaFechaAcceso by remember { mutableStateOf("Nunca") }
 
-    // Solo obtenemos y mostramos los datos del usuario, sin incrementar el contador.
+    // Obtener datos del usuario desde la base de datos sin modificar el contador
     LaunchedEffect(emailUsuario) {
         coroutineScope.launch {
             val usuario = usuarioDao.obtenerUsuarioPorEmail(emailUsuario)
@@ -53,7 +52,7 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
         }
     }
 
-    // Crear canal de notificación solo en Android 8+.
+    // Crear canal de notificación en Android 8+
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -64,20 +63,20 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
             val manager = context.getSystemService(NotificationManager::class.java)
             manager?.createNotificationChannel(channel)
         }
-        // Enviar notificación de bienvenida.
+        // Mostrar notificación de bienvenida
         mostrarNotificacion(context, "Bienvenido a la aplicación")
     }
 
-    // Diseño principal de la pantalla.
+    // Diseño principal de la pantalla
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFE3F2FD)) // Fondo azul muy claro.
+            .background(Color(0xFFE3F2FD)) // Fondo azul claro
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título de bienvenida.
+        // Título de bienvenida
         Text(
             text = "Bienvenido 👋",
             style = MaterialTheme.typography.headlineMedium,
@@ -85,7 +84,7 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tarjeta que muestra la información del usuario.
+        // Tarjeta que muestra la información del usuario
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -129,11 +128,11 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
         }
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Botón para consultar la API.
+        // Botón para navegar a la pantalla de consulta de API
         Button(
             onClick = {
                 navController.navigate(Pantalla.Consulta.ruta)
-                mostrarNotificaciones = false // Detiene el envío periódico de notificaciones.
+                mostrarNotificaciones = false // Detiene las notificaciones automáticas
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -147,7 +146,7 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botón para cerrar la aplicación.
+        // Botón para cerrar la aplicación
         OutlinedButton(
             onClick = { System.exit(0) },
             modifier = Modifier.fillMaxWidth(),
@@ -161,7 +160,7 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
         }
     }
 
-    // Notificaciones periódicas.
+    // Notificaciones automáticas cada 500 ms
     DisposableEffect(mostrarNotificaciones) {
         val runnable = object : Runnable {
             override fun run() {
@@ -180,7 +179,7 @@ fun PrincipalScreen(navController: NavController, context: Context, emailUsuario
     }
 }
 
-// Función para mostrar una notificación.
+// Función para mostrar una notificación en Android
 fun mostrarNotificacion(context: Context, mensaje: String) {
     if (ActivityCompat.checkSelfPermission(
             context,
@@ -195,6 +194,6 @@ fun mostrarNotificacion(context: Context, mensaje: String) {
         .setContentText(mensaje)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
     with(NotificationManagerCompat.from(context)) {
-        notify(1, builder.build())
+        notify(1, builder.build()) // Enviar la notificación
     }
 }

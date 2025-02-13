@@ -27,8 +27,10 @@ import com.example.tareafinalmoviles.ui.theme.RegistroScreen
 
 class MainActivity : ComponentActivity() {
 
+    // Registrar un lanzador para solicitar permisos de notificación
     private val requestPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            // Si el permiso es concedido, mostrar la notificación
             if (isGranted) {
                 mostrarNotificacion()
             }
@@ -40,24 +42,30 @@ class MainActivity : ComponentActivity() {
         // Crear el canal de notificación si es necesario
         createNotificationChannel()
 
-        // Pedir permisos de notificación en Android 13+
+        // Verificar y solicitar permisos de notificación en Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Solicitar permiso de notificación explícitamente para Android 13+
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
+            // Si la versión es anterior a Android 13, mostrar la notificación directamente
             mostrarNotificacion()
         }
 
+        // Configurar la interfaz de usuario con composables
         setContent {
-            val navController = rememberNavController()
-            val context = LocalContext.current
+            val navController = rememberNavController() // Controlador de navegación
+            val context = LocalContext.current // Contexto actual
 
+            // Navegación entre pantallas con la estructura de rutas
             NavHost(
                 navController = navController,
-                startDestination = Pantalla.Registro.ruta
+                startDestination = Pantalla.Registro.ruta // Pantalla inicial de Registro
             ) {
+                // Ruta para la pantalla de registro
                 composable(Pantalla.Registro.ruta) {
                     RegistroScreen(navController = navController, context = context)
                 }
+                // Ruta para la pantalla principal, que recibe un argumento (emailUsuario)
                 composable(
                     route = "${Pantalla.Principal.ruta}/{emailUsuario}",
                     arguments = listOf(navArgument("emailUsuario") { type = NavType.StringType })
@@ -65,6 +73,7 @@ class MainActivity : ComponentActivity() {
                     val emailUsuario = backStackEntry.arguments?.getString("emailUsuario") ?: ""
                     PrincipalScreen(navController = navController, context = context, emailUsuario = emailUsuario)
                 }
+                // Ruta para la pantalla de consulta
                 composable(Pantalla.Consulta.ruta) {
                     ConsultaScreen(navController = navController)
                 }
@@ -72,14 +81,15 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Crear canal de notificación (Android 8+)
+    // Crear el canal de notificación (requerido para Android 8+)
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "mi_canal_id"
-            val channelName = "Canal de Notificaciones"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, channelName, importance)
+            val channelId = "mi_canal_id" // ID único para el canal
+            val channelName = "Canal de Notificaciones" // Nombre del canal
+            val importance = NotificationManager.IMPORTANCE_DEFAULT // Importancia de la notificación
+            val channel = NotificationChannel(channelId, channelName, importance) // Crear el canal
 
+            // Obtener el servicio de notificación y crear el canal
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
@@ -87,21 +97,23 @@ class MainActivity : ComponentActivity() {
 
     // Función para mostrar una notificación
     private fun mostrarNotificacion() {
-        val channelId = "mi_canal_id"
-        val notificationId = 1
+        val channelId = "mi_canal_id" // El ID del canal de notificación
+        val notificationId = 1 // ID único para la notificación
 
+        // Crear el builder de la notificación
         val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Asegúrate de que este ícono existe
-            .setContentTitle("¡Hola!")
-            .setContentText("Esta es una prueba de notificación")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setSmallIcon(R.drawable.ic_launcher_foreground) // Ícono de la notificación (asegúrate de que este ícono exista)
+            .setContentTitle("¡Hola!") // Título de la notificación
+            .setContentText("Bienvenido a la aplicación") // Texto de la notificación
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT) // Establecer la prioridad
 
-        // Verificar permisos antes de mostrar la notificación
+        // Verificar si el permiso de notificaciones está concedido antes de mostrar la notificación
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.POST_NOTIFICATIONS
             ) == PackageManager.PERMISSION_GRANTED
         ) {
+            // Mostrar la notificación con el ID proporcionado
             NotificationManagerCompat.from(this).notify(notificationId, builder.build())
         }
     }

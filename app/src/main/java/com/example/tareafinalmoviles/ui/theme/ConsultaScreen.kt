@@ -1,6 +1,5 @@
 package com.example.tareafinalmoviles.ui.theme
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,18 +21,25 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ConsultaScreen(navController: NavController) {
+    // Estado para almacenar la lista de usuarios obtenida de la API
     val usuarios = remember { mutableStateOf<List<UsuarioApi>>(emptyList()) }
+
+    // CoroutineScope para manejar la solicitud de red de forma asíncrona
     val coroutineScope = rememberCoroutineScope()
+
+    // Estado para controlar si la carga de datos sigue en proceso
     var cargando by remember { mutableStateOf(true) }
 
+    // LaunchedEffect se ejecuta cuando la pantalla se carga por primera vez
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             try {
+                // Llamada a la API para obtener la lista de usuarios
                 usuarios.value = RetrofitClient.apiService.obtenerUsuarios()
             } catch (e: Exception) {
-                e.printStackTrace()
+                e.printStackTrace() // Manejo de error en la consola
             } finally {
-                cargando = false
+                cargando = false // Finaliza la carga, independientemente del resultado
             }
         }
     }
@@ -42,7 +48,7 @@ fun ConsultaScreen(navController: NavController) {
         .fillMaxSize()
         .padding(16.dp)) {
 
-        // Botón para volver atrás
+        // Botón para volver a la pantalla anterior
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
@@ -54,12 +60,13 @@ fun ConsultaScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Título de la pantalla
         Text("Usuarios de la API", style = MaterialTheme.typography.titleLarge)
 
         Spacer(modifier = Modifier.height(8.dp))
 
         if (cargando) {
-            // Muestra un indicador de carga mientras se obtienen los datos
+            // Muestra un indicador de carga mientras los datos se obtienen de la API
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -67,8 +74,10 @@ fun ConsultaScreen(navController: NavController) {
                 CircularProgressIndicator()
             }
         } else {
+            // Lista de usuarios utilizando LazyColumn para optimizar el rendimiento
             LazyColumn {
                 items(usuarios.value) { usuario ->
+                    // Cada usuario se representa dentro de una Card
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -77,6 +86,7 @@ fun ConsultaScreen(navController: NavController) {
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
+                            // Se muestran el nombre y el correo del usuario
                             Text(text = "Nombre: ${usuario.name}", style = MaterialTheme.typography.bodyLarge)
                             Text(text = "Correo: ${usuario.email}", style = MaterialTheme.typography.bodyMedium)
                         }
